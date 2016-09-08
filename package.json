@@ -1,0 +1,19 @@
+{
+  "name": "twit-live",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "matt laguardia",
+  "license": "MIT",
+  "dependencies": {
+    "body-parser": "^1.15.2",
+    "dotenv": "^2.0.0",
+    "express": "^4.14.0",
+    "node-tweet-stream": "^2.0.1",
+    "socket.io": "^1.4.8"
+  }
+}
