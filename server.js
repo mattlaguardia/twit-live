@@ -7,8 +7,9 @@ var express = require('express'),
 
 require('dotenv').load();
 
-app.use(express.static(__dirname + '/public'));
+app.use(express.static('public'));
 app.use(bodyParser.urlencoded({extended: true}));
+app.set('view engine', 'ejs');
 
 app.get('/', function(req, res) {
   res.sendFile(__dirname + '/public/index.html')
@@ -32,10 +33,13 @@ app.get('/twit', function(req, res) {
   twitter.track(req.searchKey);
   console.log('Tracking: ' + req.searchKey);
 
-  // res.render(req.searchKey);
+  var tweet;
+
   twitter.on('tweet', function(tweet) {
     console.log('Tweet: ' + tweet.text);
+    tweet = tweet.text;
   })
+  res.json({"tweets": tweet})
 })
 
 app.listen(process.env.PORT || 3000, function () {
