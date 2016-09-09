@@ -2,8 +2,8 @@ var express = require('express'),
     app = express(),
     bodyParser = require('body-parser'),
     server = require('http').Server(app),
-    io = require('socket.io')(server),
-    Twitter = require('node-tweet-stream');
+    io = require('socket.io')(server);
+    // Twitter = require('node-tweet-stream');
 
 server.listen(3000, "127.0.0.1");
 
@@ -30,10 +30,10 @@ io.sockets.on('connection', function(socket) {
   });
 
 });
-twitter.on('tweet', function(tweet) {
-  console.log('Tweet: ' + tweet.text);
-  io.sockets.emit('recieve_tweet', tweet);
-})
+// twitter.on('tweet', function(tweet) {
+//   console.log('Tweet: ' + tweet.text);
+//   io.sockets.emit('recieve_tweet', tweet);
+// })
 
 app.get('/twit', function(req, res) {
   req.searchKey = 'San Francisco'
