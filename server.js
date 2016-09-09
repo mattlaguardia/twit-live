@@ -1,21 +1,17 @@
 var express = require('express'),
     app = express(),
     bodyParser = require('body-parser'),
-    server = require('http').createServer(app),
-    io = require('socket.io').listen(server),
+    server = require('http').Server(app),
+    io = require('socket.io')(server),
     Twitter = require('node-tweet-stream');
+
+server.listen(3000, "127.0.0.1");
 
 require('dotenv').load();
 
+app.set('view engine', 'ejs');
 app.use(express.static('public'));
 app.use(bodyParser.urlencoded({extended: true}));
-app.set('view engine', 'ejs');
-
-app.get('/', function(req, res) {
-  res.sendFile(__dirname + '/public/index.html')
-})
-
-
 
 // twitter api call //
 twitter = new Twitter ({
@@ -25,21 +21,27 @@ twitter = new Twitter ({
   token_secret: process.env.TWITTER_TOKEN_SECRET
 })
 
-app.get('/twit', function(req, res) {
-  twitter.untrack(req.searchKey);
-  console.log('Untracking: ' + req.searchKey);
+// socket io connection //
+io.sockets.on('connection', function(socket) {
+  // socket.emit('recieve_tweet', {tweet: tweets})
+  console.log('User is connected: ' + socket);
+  socket.on('diconnect', function() {
+    console.log('user disconnected');
+  });
 
+});
+twitter.on('tweet', function(tweet) {
+  console.log('Tweet: ' + tweet.text);
+  io.sockets.emit('recieve_tweet', tweet);
+})
+
+app.get('/twit', function(req, res) {
   req.searchKey = 'San Francisco'
   twitter.track(req.searchKey);
   console.log('Tracking: ' + req.searchKey);
 
-  var tweet;
 
-  twitter.on('tweet', function(tweet) {
-    console.log('Tweet: ' + tweet.text);
-    tweet = tweet.text;
-  })
-  res.json({"tweets": tweet})
+  res.render('partials/feed', {searchKey: req.searchKey})
 })
 
 app.listen(process.env.PORT || 3000, function () {
