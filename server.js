@@ -2,8 +2,8 @@ var express = require('express'),
     app = express(),
     bodyParser = require('body-parser'),
     server = require('http').Server(app),
-    io = require('socket.io')(server);
-    // Twitter = require('node-tweet-stream');
+    io = require('socket.io').listen(server),
+    Twit = require('twit');
 
 server.listen(3000, "127.0.0.1");
 
@@ -14,26 +14,30 @@ app.use(express.static('public'));
 app.use(bodyParser.urlencoded({extended: true}));
 
 // twitter api call //
-twitter = new Twitter ({
+var twitter = new Twit ({
   consumer_key: process.env.TWITTER_KEY,
   consumer_secret: process.env.TWITTER_SECRET,
-  token: process.env.TWITTER_TOKEN,
-  token_secret: process.env.TWITTER_TOKEN_SECRET
+  access_token: process.env.TWITTER_TOKEN,
+  access_token_secret: process.env.TWITTER_TOKEN_SECRET
 })
 
 // socket io connection //
 io.sockets.on('connection', function(socket) {
   // socket.emit('recieve_tweet', {tweet: tweets})
-  console.log('User is connected: ' + socket);
+  console.log('User is connected');
+
+  var stream = twitter.stream('statuses/filter', { track: 'San Francisco' });
+
+  stream.on('tweet', function(tweet) {
+    io.sockets.emit('stream', tweet.text);
+    console.log(tweet.text)
+  })
+
   socket.on('diconnect', function() {
     console.log('user disconnected');
   });
 
 });
-// twitter.on('tweet', function(tweet) {
-//   console.log('Tweet: ' + tweet.text);
-//   io.sockets.emit('recieve_tweet', tweet);
-// })
 
 app.get('/twit', function(req, res) {
   req.searchKey = 'San Francisco'
@@ -45,5 +49,5 @@ app.get('/twit', function(req, res) {
 })
 
 app.listen(process.env.PORT || 3000, function () {
-  console.log("Express Sever Listening on Port 3000")
+  console.log("Express Server Listening on Port 3000")
 })
